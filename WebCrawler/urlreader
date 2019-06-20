@@ -1,0 +1,16 @@
+   	URL url = stringToURL(nextPage);
+    	StringBuilder sb = new StringBuilder();
+    	InputStream is;
+		try {
+			is = url.openStream();
+	    	BufferedReader bf = new BufferedReader(new InputStreamReader(is));
+	    	String newLine = null;
+	    	while((newLine = bf.readLine()) != null)
+	    	{
+	    		sb.append(newLine).append("\n");
+	    	}
+		} catch (IOException e) {
+			throw new DownloaderException("Nie mozna polaczyc ze strona " + nextPage);
+			 
+		}
+		return sb.toString();

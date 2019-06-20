@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry excluding="tests/" kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/LogLibrary"/>
+	<classpathentry kind="lib" path="/home/marcin/Dokumenty/java/LogLibrary/out/artifacts/LogLibrary_jar/LogLibrary.jar"/>
+	<classpathentry kind="lib" path="/home/marcin/Dokumenty/java/database/h2/bin/h2-1.4.190.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="output" path="out/production/WebCrawler"/>
+</classpath>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<eclipse-userlibraries>
+  <library name="LogLibrary">
+    <archive path="/home/marcin/Dokumenty/java/LogLibrary/out/artifacts/LogLibrary_jar/LogLibrary.jar" />
+  </library>
+</eclipse-userlibraries>
+
