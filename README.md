@@ -13,7 +13,7 @@ Dzięki aplikacji możemy uzyskać następujące informacje
 - maksymalny nieprzerwany czas spędzony na portalu YouTube w ciągu ostatniej doby
 - ilość minut spędzonych na portalu YouTube w poszczególnych godzinach
 
-Aplikacja umożliwia także wysyłanie maili, jeśli ilość danych pobranych przez użytkownika przekroczy zadany próg.
+Aplikacja umożliwia także wysyłanie maili(alerty), jeśli ilość danych pobranych przez użytkownika przekroczy zadany próg.
 # Technologie i użyte narzędzia
 
 Aplikacja korzysta z takich narzędzi jak:
@@ -38,5 +38,81 @@ użyteczną funkcją w przypadku aplikacji monitorujących.
 
 ### PostgreSQL
 PostgreSQL jeden z trzech najpopularniejszych otwartych relacyjnych systemów bazodanowych.
+
+# Instalacja i konfiguracja
+Systemem operacyjnym na którym zostało zainstalowane oprogramowanie jest Ubuntu 18.10. 
+
+Na początku należy zaktualizować nasz system przed instalacją jakichkolwiek paczek:
+```bash
+sudo apt update
+sudo apt upgrade
+sudo reboot
+```
+
+Instalacja oprogramowania Docker, potrzebnego do uruchomienia Redasha:
+```bash
+sudo apt-get update 
+sudo apt-get -yy install apt-transport-https ca-certificates curl software-properties-common wget pwgen
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt-get update && sudo apt-get -y install docker-ce
+```
+
+Instalacja Docker Compose:
+```bash
+export VER="1.22.0"
+sudo curl -L https://github.com/docker/compose/releases/download/${VER}/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+```
+
+Nadanie praw pliku wykonywalnego:
+```bash
+sudo chmod +x /usr/local/bin/docker-compose
+```
+
+Pozwolenie obecnemu użytkownikowi uruchamiania komend Dockera:
+```bash
+sudo usermod -aG docker $USER
+newgrp docker
+```
+
+### IPAC-NG
+```bash
+./ipac-ng/configure --enable-default-storage=postgre
+make
+make install
+mkdir /etc/ipac-ng
+direct=$(pwd)
+cp conf/ipac.conf /etc/ipac-ng
+cp conf/rules.conf /etc/rules.conf
+./ipac-ng/fetchipac -Sv
+./ipac-ng/ipacsum -t today
+```
+
+Następnie należy dodać wpis:
+```bash
+*/4 * * * * root ${direct}/ipac-ng/fetchipac
+```
+do pliku **/etc/crontab** który to będzie odpowiadał za odpalanie fetchipac co 4 minuty w celu zapisania danych z ipac-ng do bazy Postgres.
+
+### Redash
+Instalację Redasha można przeprowadzić w sposób automatyczny poprzez pobranie gotowego skryptu, którego uruchomienie wszystko za nas zrobi lub manulanie(instalacja krok po kroku).
+Poniżej przedstawiona została opcja automatyczna:
+```bash
+https://raw.githubusercontent.com/getredash/redash/master/setup/setup.sh
+chmod +x setup.sh
+./setup.sh
+```
+
+### PostgreSQL
+Na sam koniec w zainstalowanej wcześniej bazie PostgreSQL należy dodać wpis:
+```bash
+host    all             all             0.0.0.0/0               md5
+```
+do pliku konfiguracyjnego **pg_hba.conf**, w celu umożliwenia połączenia się uruchomionego Redasha w Dockerze z bazą danych która jest lokalnie.
+
+Na sam koniec należy wykonać polecenie:
+```bash
+service postgresql restart
+```
 
 
