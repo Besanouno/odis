@@ -88,11 +88,11 @@ cp conf/rules.conf /etc/rules.conf
 ./ipac-ng/ipacsum -t today
 ```
 
-Następnie należy dodać wpis:
+Następnie należy wykonać polecenie:
 ```bash
-*/4 * * * * root ${direct}/ipac-ng/fetchipac
+echo "*/4 * * * * root ${direct}/ipac-ng/fetchipac" >> /etc/crontab
 ```
-do pliku **/etc/crontab** który to będzie odpowiadał za odpalanie fetchipac co 4 minuty w celu zapisania danych z ipac-ng do bazy Postgres.
+które to doda wpis do pliku **/etc/crontab** i będzie ono odpowiadało za odpalanie fetchipac co 4 minuty w celu zapisania danych z ipac-ng do bazy PostgreSQL.
 
 ### Redash
 Instalację Redasha można przeprowadzić w sposób automatyczny poprzez pobranie gotowego skryptu, którego uruchomienie wszystko za nas zrobi lub manulanie(instalacja krok po kroku).
@@ -104,7 +104,7 @@ chmod +x setup.sh
 ```
 
 ### PostgreSQL
-Na sam koniec w zainstalowanej wcześniej bazie PostgreSQL należy dodać wpis:
+Dla zainstalowanej wcześniej lokalnie bazie PostgreSQL należy dodać wpis:
 ```bash
 host    all             all             0.0.0.0/0               md5
 ```
