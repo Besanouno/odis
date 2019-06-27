@@ -115,4 +115,10 @@ Na sam koniec należy wykonać polecenie:
 service postgresql restart
 ```
 
+# Wygląd aplikacji
+
+![wygladAplikacji1.png](https://github.com/Besanouno/odis/blob/master/wygladAplikacji1.png)
+
+![wygladAplikacji2.png](https://github.com/Besanouno/odis/blob/master/wygladAplikacji2.png)
+
 
