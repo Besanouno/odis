@@ -5,15 +5,25 @@ informacje o aktywności użytkownika w sieci
 
 # Funkcjonalność
 
-Dzięki aplikacji możemy uzyskać następujące informacje
+Dzięki aplikacji możemy uzyskać następujące informacje:
+- maksymalny nieprzerwany czas na wybranej stronie przez użytkownika w ciągu doby,
+- obecność użytkownika na wybranej stronie w ciągu ostatniej godziny [kB],
+- ruch związany ze stroną godzina po godzinie dla wybranego użytkownika [kB],
+- czas spędzony na stronie przez wybranego użytkownika per godzina w ciągu ostatniej doby,
+- sumaryczny ruch na hostach w ciągu ostatniej doby,
+- sumaryczny ruch godzina po godzinie w ciągu ostatniej doby dla poszczególnych hostów.
+
+Aplikacja umożliwia także wysyłanie maili(alerty). Zdefiniowany został alert dotyczący wejścia na stronę wykop.pl
+<!---
 - stosunek procentowy ilości pobieranych danych do wysyłanych z ostatniej doby
 - ilość danych pobranych i odebranych dla każdej godziny z ostatniej doby
 - dla wybranych portali internetowych ilość danych pobranych, a także wysłanych przez użytkownika w ciągu ostatniej godziny
 - aktywność użytkownika na portalu Wykop w ciągu ostatniej godziny
 - maksymalny nieprzerwany czas spędzony na portalu YouTube w ciągu ostatniej doby
 - ilość minut spędzonych na portalu YouTube w poszczególnych godzinach
-
 Aplikacja umożliwia także wysyłanie maili(alerty), jeśli ilość danych pobranych przez użytkownika przekroczy zadany próg.
+--->
+
 # Technologie i użyte narzędzia
 
 Aplikacja korzysta z takich narzędzi jak:
@@ -40,6 +50,7 @@ użyteczną funkcją w przypadku aplikacji monitorujących.
 PostgreSQL jeden z trzech najpopularniejszych otwartych relacyjnych systemów bazodanowych.
 
 # Instalacja i konfiguracja
+
 Systemem operacyjnym na którym zostało zainstalowane oprogramowanie jest Ubuntu 18.10. 
 
 Na początku należy zaktualizować nasz system przed instalacją jakichkolwiek paczek:
@@ -104,7 +115,7 @@ chmod +x setup.sh
 ```
 
 ### PostgreSQL
-Dla zainstalowanej wcześniej lokalnie bazie PostgreSQL należy dodać wpis:
+Dla zainstalowanej wcześniej lokalnie bazy PostgreSQL należy dodać wpis:
 ```bash
 host    all             all             0.0.0.0/0               md5
 ```
