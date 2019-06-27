@@ -1,133 +1,113 @@
--- Używane strony w przeciągu ostatniej godziny - Zapytanie zwraca nazwę strony, oraz sumę bajtów które zostały z niej odebrane bądź do niej wysłane w ciągu ostatniej godziny.
+(v2) Sumaryczny ruch na hostach w ciągu ostatniej doby
 
-SELECT sum(bytes),
+SELECT rule_name,
+       sum(bytes)/1024 AS kB
+FROM logs
+WHERE rule_name LIKE 'Total - %'
+  AND (
+         (SELECT extract(epoch
+                         FROM now())) - that_time < 86400)
+GROUP BY rule_name;
+
+
+
+(v2) Sumaryczny ruch godzina po godzinie w ciągu ostatniej doby dla poszczególnych hostów
+
+SELECT sum(bytes)/1024 AS kB,
+       rule_name,
+       EXTRACT (HOUR
+                FROM that_time::abstime::TIMESTAMP) AS godzina,
+               EXTRACT (DAY
+                        FROM that_time::abstime::TIMESTAMP) AS dzien
+FROM logs
+WHERE
+    (SELECT extract(epoch
+                    FROM now())) - that_time < 86400
+  AND rule_name LIKE 'Total - %'
+GROUP BY rule_name,
+         godzina,
+         dzien
+ORDER BY dzien ASC,
+         godzina ASC;
+         
+         
+         
+(v2) Ruch związany ze stroną godzina po godzinie dla wybranego użytkownika
+
+SELECT sum(bytes)/1024 AS kB,
+       rule_name,
+       EXTRACT (HOUR
+                FROM that_time::abstime::TIMESTAMP) AS godzina,
+               EXTRACT (DAY
+                        FROM that_time::abstime::TIMESTAMP) AS dzien
+FROM logs
+WHERE
+    (SELECT extract(epoch
+                    FROM now())) - that_time < 86400
+  AND rule_name LIKE '{{witryna}} - %' 
+  AND CASE WHEN '{{uzytkownik}}' ='all' THEN true=true ELSE rule_name LIKE '%{{uzytkownik}}' END
+GROUP BY rule_name,
+         godzina,
+         dzien
+ORDER BY dzien ASC,
+         godzina ASC;
+         
+         
+         
+(v2) Obecność użytkownika na wybranej stronie w ciągu ostatniej godziny
+
+SELECT sum(bytes)/1024 AS kB,
        rule_name
 FROM logs
 WHERE
     (SELECT extract(epoch
                     FROM now())) - that_time < 3600
-  AND rule_name NOT IN ('outgoing to internet',
-                        'incoming from internet')
+  AND rule_name LIKE '{{witryna}} - %'
+  AND CASE WHEN '{{uzytkownik}}' ='all' THEN true=true ELSE rule_name LIKE '%{{uzytkownik}}' END
 GROUP BY rule_name;
+         
 
+(v2) Czas spędzony na stronie przez wybranego użytkownika per godzina w ciągu ostatniej doby
 
-
-
-
--- Ruch przychodzący/wychodzący w przeciągu doby - Zapytanie zwraca sumę bajtów ruchu przychodzącego i wychodzącego w przeciągu ostatnich 24 godzin.
-
-SELECT sum(bytes) AS "Procentowy udział",
-       rule_name
+SELECT sum(case when bytes > 0 then 4 else 0 end) AS minutes,
+       rule_name,
+       EXTRACT (HOUR
+                FROM that_time::abstime::TIMESTAMP) AS godzina,
+               EXTRACT (DAY
+                        FROM that_time::abstime::TIMESTAMP) AS dzien
 FROM logs
 WHERE
     (SELECT extract(epoch
                     FROM now())) - that_time < 86400
-  AND rule_name IN ('outgoing to internet',
-                    'incoming from internet')
-GROUP BY rule_name;
-
-
-
-
-
--- Ruch przychodzący/wychodzący per godzina w ciągu ostatniej doby - Zapytanie które pokazuje użycie internetu w każdej godzinie w ciągu ostatniej doby.
-
-SELECT sum(bytes) AS b,
-       rule_name,
-       EXTRACT (HOUR
-                FROM that_time::abstime::TIMESTAMP) AS h,
-               EXTRACT (DAY
-                        FROM that_time::abstime::TIMESTAMP) AS d
-FROM logs logs
-WHERE
-    (SELECT extract(epoch
-                    FROM now())) - that_time < 86400
-  AND rule_name IN ('outgoing to internet',
-                    'incoming from internet')
+  AND rule_name LIKE '{{witryna}} - %'
+  AND CASE WHEN '{{uzytkownik}}' ='all' THEN true=true ELSE rule_name LIKE '%{{uzytkownik}}' END
 GROUP BY rule_name,
-         h,
-         d
-ORDER BY d ASC,
-         h ASC;
+         godzina,
+         dzien
+ORDER BY dzien ASC,
+         godzina ASC;
+         
+        
+(v2) Maksymalny nieprzerwany czas na wybranej stronie przez użytkownika w ciągu doby
+
+select max(minutes) as minuty from (
+select (select count(*)*4 from logs where that_time>t1 AND that_time < t2 AND rule_name LIKE '{{witryna}} - %' AND rule_name LIKE '%{{uzytkownik}}') as minutes from 
+(
+	select rule_name, bytes, that_time as t1, 
+	lead(that_time) over (order by that_time asc) as t2
+	from logs where bytes = 0 
+    AND rule_name LIKE '{{witryna}} - %'
+    AND rule_name LIKE '%{{uzytkownik}}'
+	AND (SELECT extract(epoch from now())) - that_time < 86400
+) x
+) y
 
 
+(v2) Alert - wejście na stronę Wykop
 
-
-
--- Ruch związany ze stroną godzina po godzinie z ostatniej doby - Zapytanie które pokazuje korzystanie z wybranej strony w każdej godzinie przez ostatnie 24 godziny.
-
-SELECT sum(bytes) AS b,
-       rule_name,
-       EXTRACT (HOUR
-                FROM that_time::abstime::TIMESTAMP) AS h,
-               EXTRACT (DAY
-                        FROM that_time::abstime::TIMESTAMP) AS d
-FROM logs logs
-WHERE
-    (SELECT extract(epoch
-                    FROM now())) - that_time < 86400
-  AND rule_name NOT IN ('outgoing to internet',
-                        'incoming from internet')
-  AND rule_name = '{{witryna}}'
-GROUP BY rule_name,
-         h,
-         d
-ORDER BY d ASC,
-         h ASC;
-
-
-
-
-
--- Obecność na wykopie w ciągu ostatniej godziny
-
-SELECT sum(bytes) AS bytes,
-       rule_name
+SELECT sum(bytes)/1024 AS kB
 FROM logs
 WHERE
     (SELECT extract(epoch
                     FROM now())) - that_time < 3600
-  AND rule_name = 'Wykop'
-GROUP BY rule_name;
-
-
-
-
-
--- Maksymalny nieprzerwany czas na YouTube w ciągu doby
-
-SELECT max(t2-t1)
-FROM
-  (SELECT bytes,
-          that_time AS t1,
-          lead(that_time) OVER (
-                                ORDER BY that_time ASC) AS t2
-   FROM logs
-   WHERE bytes = 0
-     AND rule_name = 'Youtube'
-     AND
-       (SELECT extract(epoch
-                       FROM now())) - that_time < 86400 ) x
-
-
-
-
-
--- Minuty spędzone na YouTube w poszczególnych godzinach
-
-SELECT count(bytes)*4 AS COUNT,
-       rule_name,
-       EXTRACT (HOUR
-                FROM that_time::abstime::TIMESTAMP) AS h,
-               EXTRACT (DAY
-                        FROM that_time::abstime::TIMESTAMP) AS d
-FROM logs
-WHERE
-    (SELECT extract(epoch
-                    FROM now())) - that_time < 86400
-  AND rule_name = 'Youtube'
-GROUP BY rule_name,
-         h,
-         d
-ORDER BY d ASC,
-         h ASC;
+    AND rule_name LIKE 'Wykop%';
